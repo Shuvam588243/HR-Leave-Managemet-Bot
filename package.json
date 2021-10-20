@@ -1,0 +1,17 @@
+{
+  "name": "first-bot",
+  "version": "1.0.0",
+  "description": "First Bot",
+  "main": "index.js",
+  "scripts": {
+    "node": "node index",
+    "dev": "npx nodemon index"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "botbuilder": "^4.14.1",
+    "botbuilder-dialogs": "^4.14.1",
+    "restify": "^8.6.0"
+  }
+}
