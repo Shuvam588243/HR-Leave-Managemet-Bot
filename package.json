@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "botbuilder": "^4.14.1",
+    "botbuilder-ai": "^4.14.1",
     "botbuilder-dialogs": "^4.14.1",
     "restify": "^8.6.0"
   }
