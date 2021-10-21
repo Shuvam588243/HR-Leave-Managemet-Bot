@@ -4,7 +4,7 @@
   "description": "First Bot",
   "main": "index.js",
   "scripts": {
-    "node": "node index",
+    "start": "nodemon index",
     "dev": "npx nodemon index"
   },
   "author": "",
