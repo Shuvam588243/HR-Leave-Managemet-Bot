@@ -60,14 +60,15 @@ class RootDialog extends ComponentDialog {
       }
     } else {
       let luisresponse = await this.recognizer.recognize(stepContext.context);
-      luisresponse = luisresponse.luisResult;
-      console.log("Luis Response => ", luisresponse);
-      let luisIntent = luisresponse.prediction.topIntent;
+      // luisresponse = luisresponse.luisResult;
+      // console.log("Luis Response => ", JSON.stringify(luisresponse));
+      let luisIntent = luisresponse.luisResult.prediction.topIntent;
       console.log(luisIntent);
       switch (luisIntent.toLowerCase()) {
         case "applyleave":
           return await stepContext.beginDialog(applyLeaveDialog, {
-            data: luisresponse.entities,
+            luisResult : true,
+            entities : luisresponse.luisResult.prediction.entities
           });
 
         case "leave status":
