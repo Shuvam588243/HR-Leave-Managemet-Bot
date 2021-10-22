@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index",
-    "dev": "npx nodemon index"
+    "dev": "npx nodemon index",
+    "push" : "git add . && git commit -m 'codeUpdated' && git push"
   },
   "author": "",
   "license": "ISC",
