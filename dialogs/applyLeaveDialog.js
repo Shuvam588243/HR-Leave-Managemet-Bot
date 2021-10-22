@@ -141,7 +141,7 @@ class ApplyLeave extends ComponentDialog {
   async askLeaveType(stepContext){
         console.log(stepContext.values.Entities);
         console.log('Ask for Leave');
-        if(!stepContext.values.Entities.leaveTypesEntity && stepContext.values.Entities.leaveTypesEntity !== null)
+        if(!stepContext.values.Entities.leaveTypesEntity)
         {
           console.log("if")
           return await stepContext.prompt(ChoicePromptDialog,{
@@ -162,14 +162,14 @@ class ApplyLeave extends ComponentDialog {
     async askNoOfDays(stepContext){
       dialogState = await this.applyLeaveDataAccessor.get(stepContext.context,{});
       console.log('AskNoOfDays',dialogState);
-      if(stepContext.values.Entities.leaveTypesEntity && stepContext.values.Entities.leaveTypesEntity !== null){       
+      if(stepContext.values.Entities.leaveTypesEntity){       
         dialogState.leaveType = stepContext.values.Entities.leaveTypesEntity;
         console.log('Number of Days',dialogState);
         return await stepContext.next();
       }
       else{
       dialogState.leaveType = stepContext.result.value;
-      if(!stepContext.values.Entities.dateFrameObj && !stepContext.values.Entities.dateFrameObj.duration){
+      if(!stepContext.values.Entities.dateFrameObj.duration){
         return await stepContext.prompt(NumberPromptDialog,`For How many days you want to apply for ${dialogState.leaveType}`);
       }else{
         return await stepContext.next();
@@ -178,7 +178,7 @@ class ApplyLeave extends ComponentDialog {
   }
 
     async askDateOfLeave(stepContext){
-      if(stepContext.values.Entities.dateFrameObj && stepContext.values.Entities.dateFrameObj.duration){
+      if(stepContext.values.Entities.dateFrameObj){
         dialogState.leaveDays = stepContext.values.Entities.dateFrameObj.duration;
         console.log('In Ask Date of Leave ', dialogState);
         return await stepContext.next();
@@ -195,7 +195,7 @@ class ApplyLeave extends ComponentDialog {
   }
 
   async leaveConfirmation(stepContext){
-      if(stepContext.values.Entities.dateFrameObj && stepContext.values.Entities.dateFrameObj.date){
+      if(stepContext.values.Entities.dateFrameObj){
         dialogState.leaveDate = stepContext.values.Entities.dateFrameObj.date;
       }else{
         dialogState.leaveDate = stepContext.result;
