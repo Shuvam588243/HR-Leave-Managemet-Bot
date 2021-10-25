@@ -51,7 +51,7 @@ class ApplyLeave extends ComponentDialog {
         this.askLeaveType.bind(this),
         this.askNoOfDays.bind(this),
         this.askDateOfLeave.bind(this),
-        this.leaveConfirmation.bind(this)
+        this.leaveConfirmation.bind(this),
       ])
     );
 
@@ -98,137 +98,145 @@ class ApplyLeave extends ComponentDialog {
 
   //with form
 
-  async preprocessEntities(stepContext){
-    try{
-      if(stepContext.options && stepContext.options.luisResult){
+  async preprocessEntities(stepContext) {
+    try {
+      if (stepContext.options && stepContext.options.luisResult) {
         // console.log(stepContext.options.entities);
 
-        let numberEntity = stepContext.options.entities.number ? stepContext.options.entities.number[0] : null;
+        let numberEntity = stepContext.options.entities.number
+          ? stepContext.options.entities.number[0]
+          : null;
 
-        let leaveTypesEntity = stepContext.options.entities.leaveTypes ? stepContext.options.entities.leaveTypes[0][0] : null;
+        let leaveTypesEntity = stepContext.options.entities.leaveTypes
+          ? stepContext.options.entities.leaveTypes[0][0]
+          : null;
 
-        let dateTimeEntity = stepContext.options.entities.datetimeV2 ? stepContext.options.entities.datetimeV2 : null;
+        let dateTimeEntity = stepContext.options.entities.datetimeV2
+          ? stepContext.options.entities.datetimeV2
+          : null;
 
-        let dateFrameObj = {}
+        let dateFrameObj = {};
 
-        if(dateTimeEntity != null){
-          dateTimeEntity.forEach((subEntities, index)=>{
-            if(subEntities.type === 'duration'){
-              dateFrameObj['duration'] = subEntities.values[0]['timex'].replace("P",
-              "").replace("D","");
+        if (dateTimeEntity != null) {
+          dateTimeEntity.forEach((subEntities, index) => {
+            if (subEntities.type === "duration") {
+              dateFrameObj["duration"] = subEntities.values[0]["timex"]
+                .replace("P", "")
+                .replace("D", "");
             }
 
-            if(subEntities.type === 'date'){
-              dateFrameObj['date'] = subEntities.values[0]["resolution"][0]["value"];
+            if (subEntities.type === "date") {
+              dateFrameObj["date"] =
+                subEntities.values[0]["resolution"][0]["value"];
             }
-          })
+          });
         }
 
         stepContext.values.Entities = {
           numberEntity,
           leaveTypesEntity,
-          dateFrameObj
-        }
+          dateFrameObj,
+        };
 
-        console.log()
+        console.log();
 
         return stepContext.next();
       }
-    }catch(error){
+    } catch (error) {
       console.log(error);
     }
   }
 
-  async askLeaveType(stepContext){
-        console.log(stepContext.values.Entities);
-        if(stepContext.values.Entities.leaveTypesEntity)
-        {
-          return await stepContext.next();
-        }
-        else{
-           return await stepContext.prompt(ChoicePromptDialog,{
-            prompt : 'Please help me with the type of leave you want to apply for',
-            choices : ChoiceFactory.toChoices([
-                'Sick Leave',
-                'Casual Leave',
-                'Earned Leave'
-            ])
-        })
-        }
+  async askLeaveType(stepContext) {
+    console.log(stepContext.values.Entities);
+    if (stepContext.values.Entities.leaveTypesEntity) {
+      return await stepContext.next();
+    } else {
+      return await stepContext.prompt(ChoicePromptDialog, {
+        prompt: "Please help me with the type of leave you want to apply for",
+        choices: ChoiceFactory.toChoices([
+          "Sick Leave",
+          "Casual Leave",
+          "Earned Leave",
+        ]),
+      });
     }
+  }
 
-    async askNoOfDays(stepContext){
-      dialogState = await this.applyLeaveDataAccessor.get(stepContext.context,{});
-      if(stepContext.values.Entities.leaveTypesEntity){       
-        dialogState.leaveType = stepContext.values.Entities.leaveTypesEntity;
-      }
-      else{
+  async askNoOfDays(stepContext) {
+    dialogState = await this.applyLeaveDataAccessor.get(
+      stepContext.context,
+      {}
+    );
+    if (stepContext.values.Entities.leaveTypesEntity) {
+      dialogState.leaveType = stepContext.values.Entities.leaveTypesEntity;
+    } else {
       dialogState.leaveType = stepContext.result.value;
-      }
-
-      if(!stepContext.values.Entities.dateFrameObj.duration){
-        return await stepContext.prompt(NumberPromptDialog,`For How many days you want to apply for?`);
-      }else{
-        return await stepContext.next();
-      }
-  }
-
-    async askDateOfLeave(stepContext){
-      if(stepContext.values.Entities.dateFrameObj.duration){
-        dialogState.leaveDays = stepContext.values.Entities.dateFrameObj.duration;
-        // console.log('In Ask Date of Leave ', dialogState);
-        return await stepContext.next();
-      }else{
-        const results = Recognizers.recognizeNumber(
-          stepContext.result,
-          Recognizers.Culture.English
-        );
-        let output;
-        results.forEach(async(result) => {
-          const value = result.resolution.value;
-          if (value) {
-            console.log('Inside If',value);
-            const days = parseInt(value);
-            if (!isNaN(days) && days >= 0 && days <= 3) {
-              dialogState.leaveDays = days;
-              return await stepContext.next();
-            }
-            else{
-              await stepContext.context.sendActivity('You cannot take leave for more then 3 days in a row');
-              return Dialog.EndOfTurn;
-            }
-          }
-        })
-        
-      }
-
-      if(!stepContext.values.Entities.dateFrameObj.date){
-        return await stepContext.prompt(TextPromptDialog,`From which date you want to apply for you leave application`);
-      }
-      else{
-        return await stepContext.next();
-      }
-  }
-
-  async leaveConfirmation(stepContext){
-      if(stepContext.values.Entities.dateFrameObj.date){
-        dialogState.leaveDate = stepContext.values.Entities.dateFrameObj.date;
-      }else{
-        dialogState.leaveDate = stepContext.result;
-      }
-        await stepContext.context.sendActivity({
-          attachments : [
-              CardFactory.adaptiveCard(confirmLeave(
-                  dialogState.leaveType,
-                  dialogState.leaveDays,
-                  dialogState.leaveDate
-              ))
-          ]
-      })
-      return await stepContext.endDialog();
     }
-  
 
+    if (!stepContext.values.Entities.dateFrameObj.duration) {
+      return await stepContext.prompt(
+        NumberPromptDialog,
+        `For How many days you want to apply for?`
+      );
+    } else {
+      return await stepContext.next();
+    }
+  }
+
+  async askDateOfLeave(stepContext) {
+    if (stepContext.values.Entities.dateFrameObj.duration) {
+      dialogState.leaveDays = stepContext.values.Entities.dateFrameObj.duration;
+      // console.log('In Ask Date of Leave ', dialogState);
+      return await stepContext.next();
+    } else {
+      let days = stepContext.result;
+      console.log(days);
+      if (days > 3) {
+        await stepContext.context.sendActivity(
+          "You can only take maximum 3 days of leave"
+        );
+      } else {
+        dialogState.leaveDays = days;
+      }
+    }
+
+    if (!stepContext.values.Entities.dateFrameObj.date) {
+      return await stepContext.prompt(
+        TextPromptDialog,
+        `From which date you want to apply for you leave application`
+      );
+    } else {
+      return await stepContext.next();
+    }
+  }
+
+  async leaveConfirmation(stepContext) {
+    if (stepContext.values.Entities.dateFrameObj.date) {
+      dialogState.leaveDate = stepContext.values.Entities.dateFrameObj.date;
+    } else {
+      const result = await this.validateDate(stepContext.result);
+      if (!result.success) {
+        return await stepContext.context.sendActivity(
+          "This date is not valid for your Leave"
+        );
+      }
+      console.log(result);
+      dialogState.leaveDate = result.date;
+    }
+    await stepContext.context.sendActivity({
+      attachments: [
+        CardFactory.adaptiveCard(
+          confirmLeave(
+            dialogState.leaveType,
+            dialogState.leaveDays,
+            dialogState.leaveDate
+          )
+        ),
+      ],
+    });
+    return await stepContext.endDialog();
+  }
 
   // async showForm(stepContext) {
   //   try {
@@ -295,6 +303,43 @@ class ApplyLeave extends ComponentDialog {
   //     console.log(error);
   //   }
   // }
+
+  async validateDate(input) {
+    try {
+      const results = Recognizers.recognizeDateTime(
+        input,
+        Recognizers.Culture.English
+      );
+      const now = new Date();
+      const earliest = now.getTime() + 60 * 60 * 1000;
+      let output;
+      results.forEach((result) => {
+        result.resolution.values.forEach((resolution) => {
+          const datevalue = resolution.value || resolution.start;
+          const datetime =
+            resolution.type === "time"
+              ? new Date(`${now.toLocaleDateString()} ${datevalue}`)
+              : new Date(datevalue);
+          if (datetime && earliest < datetime.getTime()) {
+            output = { success: true, date: datetime.toLocaleDateString() };
+            return;
+          }
+        });
+      });
+      return (
+        output || {
+          success: false,
+          message: "I'm sorry, please enter a date at least an hour out.",
+        }
+      );
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          "I'm sorry, I could not interpret that as an appropriate date. Please enter a date at least an hour out.",
+      };
+    }
+  }
 }
 
 module.exports.ApplyLeave = ApplyLeave;
