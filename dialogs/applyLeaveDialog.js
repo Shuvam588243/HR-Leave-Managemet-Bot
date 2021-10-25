@@ -10,6 +10,7 @@ const {
 const { applyLeaveDialog } = require("../constants");
 const { confirmLeave, leaveApplicationForm } = require("../cards/cards");
 const { CardFactory } = require("botbuilder-core");
+const Recognizers = require("@microsoft/recognizers-text-suite");
 
 //Constants
 const applyLeaveDialogWaterfall1 = "applyLeaveDialogWaterfall1";
@@ -140,11 +141,12 @@ class ApplyLeave extends ComponentDialog {
 
   async askLeaveType(stepContext){
         console.log(stepContext.values.Entities);
-        console.log('Ask for Leave');
-        if(!stepContext.values.Entities.leaveTypesEntity)
+        if(stepContext.values.Entities.leaveTypesEntity)
         {
-          console.log("if")
-          return await stepContext.prompt(ChoicePromptDialog,{
+          return await stepContext.next();
+        }
+        else{
+           return await stepContext.prompt(ChoicePromptDialog,{
             prompt : 'Please help me with the type of leave you want to apply for',
             choices : ChoiceFactory.toChoices([
                 'Sick Leave',
@@ -153,41 +155,55 @@ class ApplyLeave extends ComponentDialog {
             ])
         })
         }
-        else{
-          console.log("else")
-          return await stepContext.next();
-        }
     }
 
     async askNoOfDays(stepContext){
       dialogState = await this.applyLeaveDataAccessor.get(stepContext.context,{});
-      console.log('AskNoOfDays',dialogState);
       if(stepContext.values.Entities.leaveTypesEntity){       
         dialogState.leaveType = stepContext.values.Entities.leaveTypesEntity;
-        console.log('Number of Days',dialogState);
-        return await stepContext.next();
       }
       else{
       dialogState.leaveType = stepContext.result.value;
+      }
+
       if(!stepContext.values.Entities.dateFrameObj.duration){
-        return await stepContext.prompt(NumberPromptDialog,`For How many days you want to apply for ${dialogState.leaveType}`);
+        return await stepContext.prompt(NumberPromptDialog,`For How many days you want to apply for?`);
       }else{
         return await stepContext.next();
-      }
       }
   }
 
     async askDateOfLeave(stepContext){
-      if(stepContext.values.Entities.dateFrameObj){
+      if(stepContext.values.Entities.dateFrameObj.duration){
         dialogState.leaveDays = stepContext.values.Entities.dateFrameObj.duration;
-        console.log('In Ask Date of Leave ', dialogState);
+        // console.log('In Ask Date of Leave ', dialogState);
         return await stepContext.next();
       }else{
-        dialogState.leaveDays = stepContext.result;
+        const results = Recognizers.recognizeNumber(
+          stepContext.result,
+          Recognizers.Culture.English
+        );
+        let output;
+        results.forEach(async(result) => {
+          const value = result.resolution.value;
+          if (value) {
+            console.log('Inside If',value);
+            const days = parseInt(value);
+            if (!isNaN(days) && days >= 0 && days <= 3) {
+              dialogState.leaveDays = days;
+              return await stepContext.next();
+            }
+            else{
+              await stepContext.context.sendActivity('You cannot take leave for more then 3 days in a row');
+              return Dialog.EndOfTurn;
+            }
+          }
+        })
+        
       }
 
-      if(!stepContext.values.Entities.dateFrameObj && !stepContext.values.Entities.dateFrameObj.date){
-        return await stepContext.prompt(TextPromptDialog,`From which date you want to apply for you ${dialogState.leaveType} leave application of ${dialogState.leaveDays} days?`);
+      if(!stepContext.values.Entities.dateFrameObj.date){
+        return await stepContext.prompt(TextPromptDialog,`From which date you want to apply for you leave application`);
       }
       else{
         return await stepContext.next();
@@ -195,7 +211,7 @@ class ApplyLeave extends ComponentDialog {
   }
 
   async leaveConfirmation(stepContext){
-      if(stepContext.values.Entities.dateFrameObj){
+      if(stepContext.values.Entities.dateFrameObj.date){
         dialogState.leaveDate = stepContext.values.Entities.dateFrameObj.date;
       }else{
         dialogState.leaveDate = stepContext.result;

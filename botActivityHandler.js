@@ -18,7 +18,7 @@ class MyBot extends ActivityHandler{
                 if(membersAdded[cnt].id !== context.activity.recipient.id){
                     
                     await this.sendIntroCard(context);
-                    await this.sendServicesOptions(context);
+                    // await this.sendServicesOptions(context);
                 }
             }
         });

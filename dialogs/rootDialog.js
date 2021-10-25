@@ -45,20 +45,6 @@ class RootDialog extends ComponentDialog {
   }
 
   async routeMessages(stepContext) {
-    if (
-      stepContext.context.activity.value &&
-      stepContext.context.activity.value.actiontype
-    ) {
-      switch (stepContext.context.activity.value.actiontype) {
-        case "applyLeaveApplicationAction":
-          let formvalues = stepContext.context.activity.value;
-          delete stepContext.context.activity.value;
-          return await stepContext.beginDialog(applyLeaveDialog, {
-            formRefill: true,
-            values: formvalues,
-          });
-      }
-    } else {
       let luisresponse = await this.recognizer.recognize(stepContext.context);
       // luisresponse = luisresponse.luisResult;
       // console.log("Luis Response => ", JSON.stringify(luisresponse));
@@ -83,8 +69,6 @@ class RootDialog extends ComponentDialog {
           );
           return await stepContext.endDialog();
       }
-    }
-
     return await stepContext.endDialog();
   }
 

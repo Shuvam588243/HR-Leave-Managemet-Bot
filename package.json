@@ -6,11 +6,12 @@
   "scripts": {
     "start": "nodemon index",
     "dev": "npx nodemon index",
-    "push" : "git add . && git commit -m 'codeUpdated' && git push"
+    "push": "git add . && git commit -m 'codeUpdated' && git push"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@microsoft/recognizers-text-suite": "^1.3.0",
     "botbuilder": "^4.14.1",
     "botbuilder-ai": "^4.14.1",
     "botbuilder-dialogs": "^4.14.1",
