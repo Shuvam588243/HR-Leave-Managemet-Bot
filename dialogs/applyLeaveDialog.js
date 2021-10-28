@@ -10,6 +10,7 @@ const {
 const { applyLeaveDialog } = require("../constants");
 const { confirmLeave, leaveApplicationForm } = require("../cards/cards");
 const { CardFactory } = require("botbuilder-core");
+const {addUser} = require('../DB');
 const Recognizers = require("@microsoft/recognizers-text-suite");
 
 //Constants
@@ -47,6 +48,7 @@ class ApplyLeave extends ComponentDialog {
 
     this.addDialog(
       new WaterfallDialog(applyLeaveDialogWaterfall2, [
+        this.getHRMID.bind(this),
         this.preprocessEntities.bind(this),
         this.askLeaveType.bind(this),
         this.askNoOfDays.bind(this),
@@ -98,8 +100,25 @@ class ApplyLeave extends ComponentDialog {
 
   //with form
 
+  async getHRMID(stepContext){
+    try{
+      return await stepContext.prompt(
+        TextPromptDialog,
+        `Sure, Can You Please Enter Your HRM ID so we can help you better`
+      );
+    }catch(error){
+      console.log(error)
+    }
+  }
+
   async preprocessEntities(stepContext) {
     try {
+      dialogState = await this.applyLeaveDataAccessor.get(
+        stepContext.context,
+        {}
+      );
+      dialogState.HRMID = stepContext.result;
+
       if (stepContext.options && stepContext.options.luisResult) {
         // console.log(stepContext.options.entities);
 
@@ -165,8 +184,7 @@ class ApplyLeave extends ComponentDialog {
 
   async askNoOfDays(stepContext) {
     dialogState = await this.applyLeaveDataAccessor.get(
-      stepContext.context,
-      {}
+      stepContext.context
     );
     if (stepContext.values.Entities.leaveTypesEntity) {
       dialogState.leaveType = stepContext.values.Entities.leaveTypesEntity;
@@ -186,21 +204,32 @@ class ApplyLeave extends ComponentDialog {
 
   async askDateOfLeave(stepContext) {
     if (stepContext.values.Entities.dateFrameObj.duration) {
-      dialogState.leaveDays = stepContext.values.Entities.dateFrameObj.duration;
+      // dialogState.leaveDays = stepContext.values.Entities.dateFrameObj.duration;
       // console.log('In Ask Date of Leave ', dialogState);
-      return await stepContext.next();
+      let days = stepContext.values.Entities.dateFrameObj.duration;
+      console.log(days);
+      if (days > 3) {
+        await stepContext.context.sendActivity(
+          "You can only take maximum 3 days of leave. Please Connect to our HR for furthur assistance"
+        );
+        return await stepContext.endDialog();
+      } else {
+        dialogState.leaveDays = stepContext.values.Entities.dateFrameObj.duration;
+      }
     } else {
       let days = stepContext.result;
       console.log(days);
       if (days > 3) {
         await stepContext.context.sendActivity(
-          "You can only take maximum 3 days of leave"
+          "You can only take maximum 3 days of leave. Please Connect to our HR for furthur assistance"
         );
+        return await stepContext.endDialog();
       } else {
         dialogState.leaveDays = days;
+        console.log('In Else');
       }
     }
-
+    console.log('Date',stepContext.values.Entities.dateFrameObj.date);
     if (!stepContext.values.Entities.dateFrameObj.date) {
       return await stepContext.prompt(
         TextPromptDialog,
@@ -230,11 +259,19 @@ class ApplyLeave extends ComponentDialog {
           confirmLeave(
             dialogState.leaveType,
             dialogState.leaveDays,
-            dialogState.leaveDate
+            dialogState.leaveDate,
+            dialogState.HRMID
           )
         ),
       ],
     });
+    let user = {
+      leaveType : dialogState.leaveType,
+      leaveDays : dialogState.leaveDays,
+      leaveDate : dialogState.leaveDate,
+      HRMID :  dialogState.HRMID
+    }
+    await addUser(user);
     return await stepContext.endDialog();
   }
 

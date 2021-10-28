@@ -1,5 +1,5 @@
 module.exports = {
-    confirmLeave : (leaveType, leaveDays, leaveDate) =>{
+    confirmLeave : (leaveType, leaveDays, leaveDate,id) =>{
         return {
 
                         "type": "AdaptiveCard",
@@ -86,7 +86,79 @@ module.exports = {
                                 ]
             
                             },
+            {
             
+                                    "type": "ColumnSet",
+                
+                                    "separator": true,
+                
+                                    "columns": [
+                
+                                        {
+                
+                                            "type": "Column",
+                
+                                            "width": "stretch",
+                
+                                            "items": [
+                
+                                                {
+                
+                                                    "type": "TextBlock",
+                
+                                                    "text": "HRMID:",
+                
+                                                    "wrap": true,
+                
+                                                    "weight": "Bolder"
+                
+                                                }
+                
+                                            ],
+                
+                                            "backgroundImage": {
+                
+                                                "horizontalAlignment": "Center",
+                
+                                                "verticalAlignment": "Center"
+                
+                                            }
+                
+                                        },
+                
+                                        {
+                
+                                            "type": "Column",
+                
+                                            "width": "stretch",
+                
+                                            "items": [
+                
+                                                {
+                
+                                                    "type": "TextBlock",
+                
+                                                    "text": `${id}`,
+                
+                                                    "wrap": true
+                
+                                                }
+                
+                                            ],
+                
+                                            "backgroundImage": {
+                
+                                                "horizontalAlignment": "Center",
+                
+                                                "verticalAlignment": "Center"
+                
+                                            }
+                
+                                        }
+                
+                                    ]
+                
+                                },
                             {
             
                                 "type": "ColumnSet",

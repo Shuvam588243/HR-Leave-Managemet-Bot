@@ -58,7 +58,10 @@ class RootDialog extends ComponentDialog {
           });
 
         case "leave status":
-          return await stepContext.beginDialog(leaveStatusDialog);
+          return await stepContext.beginDialog(leaveStatusDialog,{
+            luisResult : true,
+            entities : luisresponse.luisResult.prediction.entities
+          });
 
         case "help":
           return await stepContext.beginDialog(helpDialog);

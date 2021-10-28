@@ -82,12 +82,28 @@ class MyBot extends ActivityHandler{
                                         "type": "TextBlock",
                                         "text": "Welcome, User! I am your personal assistant. I can help you with your leave application request. Type help to know all my features. How can I help you ?",
                                         "wrap": true,
-                                        "size": "Medium",
+                                        "size": "Default",
                                         "weight": "Bolder",
                                         "color": "Accent",
                                         "spacing": "Medium"
                                     }
                                 ]
+                            },
+                            {
+                                "type": "TextBlock",
+                                "text": "Please type \"Apply Leave\" for Applying for Leave and \"Leave Status\" to check for leave.",
+                                "wrap": true,
+                                "size": "Default",
+                                "weight": "Bolder",
+                                "color": "Accent"
+                            },
+                            {
+                                "type": "TextBlock",
+                                "text": "You can also directly write you query you are looking for \"I want to apply for a 2 days sick leave on 22nd October 2021\"",
+                                "wrap": true,
+                                "size": "Small",
+                                "weight": "Bolder",
+                                "color": "Warning"
                             }
                         ]
                     }
