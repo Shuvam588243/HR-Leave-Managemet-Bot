@@ -1,11 +1,7 @@
 const AWS = require('aws-sdk');
 const {nanoid} = require('nanoid');
 
-AWS.config.update({
-    region : "ap-south-1",
-    accessKeyId : "AKIA4J4OZNK4CNGPSZVX",
-    secretAccessKey : "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"
-});
+
 
 const dynamoClient = new AWS.DynamoDB.DocumentClient();
 
